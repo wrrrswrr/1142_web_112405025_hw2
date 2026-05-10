@@ -3,75 +3,33 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { usePsyStore } from "../../store/store"
 
 export default function Question() {
 
+  const psyData = usePsyStore((state) => state.psyData)
+  const setPsyScore = usePsyStore((state) => state.setScore)
+
+  console.log(psyData)
+  console.log(psyData.quizeData)
+
   const router = useRouter();
 
-  let questionData = [
-    {
-      tittle: "就是題目1",
-      options:[
-        {
-          text: "選項一",
-          value: 1
-        },
-        {
-          text: "選項二",
-          value: 2
-        },
-        {
-          text: "選項三",
-          value: 3
-        },
-      ]
-    },
-    {
-      tittle: "就是題目2",
-      options:[
-        {
-          text: "選項一",
-          value: 1
-        },
-        {
-          text: "選項二",
-          value: 2
-        },
-        {
-          text: "選項三",
-          value: 3
-        },
-      ]
-    },
-    {
-      tittle: "就是題目3",
-      options:[
-        {
-          text: "選項一",
-          value: 1
-        },
-        {
-          text: "選項二",
-          value: 2
-        },
-        {
-          text: "選項三",
-          value: 3
-        },
-      ]
-    },
-
-
-  ]
-
-  // let questionData = [];
-
   const [questionIndex, setQuestionIndex] = useState(0);
+
+
+  useEffect(() => {
+    console.log("目前分數"+psyData.score);
+  }, [psyData.score]);
+  
 
   function nextQuestion(optionIndex: any){
     console.log("使用者選擇:"+ optionIndex);
 
-    if(questionIndex != questionData.length-1){
+    setPsyScore( psyData.score + psyData.quizeData[questionIndex].options[optionIndex].value );
+    console.log( psyData.score );
+
+    if(questionIndex != psyData.quizeData.length-1){
       console.log("下一題");
       setQuestionIndex (questionIndex + 1)
     }
@@ -88,10 +46,10 @@ export default function Question() {
         答題        
         
         <div>
-          <div>{ ("Q"+(questionIndex+1))+"."+ questionData[questionIndex].tittle }</div>
-          <div onClick={ ()=>nextQuestion(0)}>{ questionData[questionIndex].options[0].text }</div>
-          <div onClick={ ()=>nextQuestion(1)}>{ questionData[questionIndex].options[1].text }</div>
-          <div onClick={ ()=>nextQuestion(2)}>{ questionData[questionIndex].options[2].text }</div>
+          <div>{ ("Q"+(questionIndex+1))+"."+ psyData.quizeData[questionIndex].tittle }</div>
+          <div onClick={ ()=>nextQuestion(0)}>{ psyData.quizeData[questionIndex].options[0].text }</div>
+          <div onClick={ ()=>nextQuestion(1)}>{ psyData.quizeData[questionIndex].options[1].text }</div>
+          <div onClick={ ()=>nextQuestion(2)}>{ psyData.quizeData[questionIndex].options[2].text }</div>
         </div>
 
         <div>下一題</div>
