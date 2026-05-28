@@ -55,42 +55,53 @@ const archetypeData: Record<"A" | "B" | "C" | "D", ArchetypeResult> = {
   }
 };
 
+function getWinner(answers: ("A" | "B" | "C" | "D" | null)[]): "A" | "B" | "C" | "D" {
+  const answersList = answers || [null, null, null, null, null];
+  const counts: Record<"A" | "B" | "C" | "D", number> = { A: 0, B: 0, C: 0, D: 0 };
+
+  answersList.forEach((letter) => {
+    if (letter) counts[letter]++;
+  });
+
+  const maxVal = Math.max(counts.A, counts.B, counts.C, counts.D);
+  const candidates = (["A", "B", "C", "D"] as const).filter(
+    (letter) => counts[letter] === maxVal
+  );
+
+  if (candidates.length === 1) {
+    return candidates[0];
+  } else {
+    const q4Choice = answersList[3];
+    if (q4Choice && candidates.includes(q4Choice)) {
+      return q4Choice;
+    } else {
+      return candidates[0] || "A";
+    }
+  }
+}
+
 export default function Result() {
   const router = useRouter();
   const psyData = usePsyStore((state) => state.psyData);
   const resetStore = usePsyStore((state) => state.reset);
 
   const [copied, setCopied] = useState(false);
-  const [winner, setWinner] = useState<"A" | "B" | "C" | "D">("A");
   const [revealed, setRevealed] = useState(false);
+  const [isIntroFlashing, setIsIntroFlashing] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Fade out transition overlay on mount
+  useEffect(() => {
+    setMounted(true);
+    const timer = setTimeout(() => {
+      setIsIntroFlashing(false);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const winner = mounted ? getWinner(psyData.answers) : "A";
 
   useEffect(() => {
-    const answersList = psyData.answers || [null, null, null, null, null];
-    const counts: Record<"A" | "B" | "C" | "D", number> = { A: 0, B: 0, C: 0, D: 0 };
-
-    answersList.forEach((letter) => {
-      if (letter) counts[letter]++;
-    });
-
-    const maxVal = Math.max(counts.A, counts.B, counts.C, counts.D);
-    const candidates = (["A", "B", "C", "D"] as const).filter(
-      (letter) => counts[letter] === maxVal
-    );
-
-    let chosenResult: "A" | "B" | "C" | "D" = "A";
-
-    if (candidates.length === 1) {
-      chosenResult = candidates[0];
-    } else {
-      const q4Choice = answersList[3];
-      if (q4Choice && candidates.includes(q4Choice)) {
-        chosenResult = q4Choice;
-      } else {
-        chosenResult = candidates[0];
-      }
-    }
-
-    setWinner(chosenResult);
 
     playCameraClick();
 
@@ -99,7 +110,7 @@ export default function Result() {
     }, 150);
 
     return () => clearTimeout(timeout);
-  }, [psyData.answers]);
+  }, []);
 
   const winnerResult = archetypeData[winner];
 
@@ -117,19 +128,18 @@ ${window.location.origin}`;
   };
 
   const handlePlayAgain = () => {
-    resetStore();
     router.push("/");
   };
 
   return (
     <div className="relative w-full h-full flex flex-col items-center pl-10 pr-10 pt-12 pb-12 select-none overflow-y-auto scrollbar-thin text-[#1E1C1A]">
-      
+
       <div className="w-full text-center space-y-2 pt-2 flex-none h-16">
         <h1 className="font-handwriting text-3xl font-semibold tracking-wide text-[#2B2927]">
           潛意識顯影底片
         </h1>
         <p className="text-xs text-neutral-400 tracking-wider">
-          {revealed 
+          {mounted && revealed
             ? `—— TYPE ${winnerResult.letter} : ${winnerResult.theme} ——`
             : "—— 潛意識終極顯影結晶 ——"
           }
@@ -137,10 +147,10 @@ ${window.location.origin}`;
       </div>
 
       <div className="w-full h-[280px] flex items-center justify-center relative overflow-visible flex-none mt-4">
-        
+
         <div className="w-64 h-[280px] relative flex items-center justify-center overflow-visible bg-transparent font-sans">
-          
-          <div 
+
+          <div
             style={{
               transform: "translateY(-10px) scale(1.15) rotate(0deg)"
             }}
@@ -155,9 +165,8 @@ ${window.location.origin}`;
             <img
               src={winnerResult.imageUrl}
               alt={winnerResult.title}
-              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-1200 ease-in-out z-30 pointer-events-none ${
-                revealed ? "opacity-100" : "opacity-0"
-              }`}
+              className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-1200 ease-in-out z-30 pointer-events-none ${mounted && revealed ? "opacity-100" : "opacity-0"
+                }`}
             />
           </div>
 
@@ -165,35 +174,42 @@ ${window.location.origin}`;
 
       </div>
 
-      <div 
-        className={`w-full max-w-[310px] space-y-4 pt-4 transition-all duration-1000 ease-out font-sans grow ${
-          revealed 
-            ? "opacity-100 transform translate-y-0 scale-100 pointer-events-auto" 
-            : "opacity-0 transform translate-y-12 scale-95 pointer-events-none"
-        }`}
+      <div
+        className={`w-full max-w-[310px] space-y-4 pt-4 transition-all duration-1000 ease-out font-sans grow ${mounted && revealed
+          ? "opacity-100 transform translate-y-0 scale-100 pointer-events-auto"
+          : "opacity-0 transform translate-y-12 scale-95 pointer-events-none"
+          }`}
       >
-        <div className="bg-white border-2 border-[#1E1C1A] rounded-xl p-4 shadow-[5px_5px_0px_0px_#1E1C1A] text-left space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#1E1C1A]">
-              {winnerResult.title}
-            </h2>
-            <span className="text-[10px] font-mono tracking-widest bg-[#E54B35] text-white px-2 py-0.5 rounded-full border border-[#1E1C1A]">
-              TYPE: {winnerResult.letter}
-            </span>
-          </div>
+        <div className="bg-white border-2 border-[#1E1C1A] rounded-xl p-4 shadow-[5px_5px_0px_0px_#1E1C1A] text-left space-y-3 min-h-[160px] flex flex-col justify-center">
+          {mounted ? (
+            <>
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-[#1E1C1A]">
+                  {winnerResult.title}
+                </h2>
+                <span className="text-[10px] font-mono tracking-widest bg-[#E54B35] text-white px-2 py-0.5 rounded-full border border-[#1E1C1A]">
+                  TYPE: {winnerResult.letter}
+                </span>
+              </div>
 
-          <p className="text-xs text-[#52504C] leading-relaxed">
-            {winnerResult.desc}
-          </p>
+              <p className="text-xs text-[#52504C] leading-relaxed">
+                {winnerResult.desc}
+              </p>
 
-          <div className="pt-2 border-t border-[#1E1C1A]/10 space-y-1.5 text-[11px]">
-            <div className="text-[#605E5A]">
-              <strong className="text-[#1E1C1A]">修行心法：</strong>{winnerResult.advice}
+              <div className="pt-2 border-t border-[#1E1C1A]/10 space-y-1.5 text-[11px]">
+                <div className="text-[#605E5A]">
+                  <strong className="text-[#1E1C1A]">修行心法：</strong>{winnerResult.advice}
+                </div>
+                <div className="text-[#605E5A]">
+                  <strong className="text-[#1E1C1A]">心靈共鳴伴侶：</strong>{winnerResult.partner}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="w-full flex items-center justify-center py-8">
+              <span className="text-xs text-[#52504C]/60 animate-pulse">正在顯影中...</span>
             </div>
-            <div className="text-[#605E5A]">
-              <strong className="text-[#1E1C1A]">心靈共鳴伴侶：</strong>{winnerResult.partner}
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="flex gap-3 w-full pb-6">

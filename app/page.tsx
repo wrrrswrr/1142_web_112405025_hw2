@@ -80,7 +80,7 @@ export default function Home() {
           </div>
 
           <p className="text-[#605E5A] text-xs font-light text-center max-w-[280px] leading-relaxed mt-4"><br />
-            請點擊相機上的 <strong className="text-[#E54B35] font-semibold">「紅色快門按鈕」</strong> 拍照，開啟您的觀景窗之旅。
+            請點擊相機上的 <strong className="text-[#E54B35] font-semibold">「紅色快門按鈕」</strong> 拍照，開啟您的觀景窗之旅
           </p>
         </div>
 
