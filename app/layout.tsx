@@ -1,6 +1,14 @@
+import React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import localFont from 'next/font/local';
+
+const chenYuluoyan = localFont({
+  src: './font/ChenYuluoyan-2.0-Thin.woff2',
+  display: 'swap',
+  variable: '--font-handwriting', 
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,16 +32,14 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="zh-TW"
+      className={`${geistSans.variable} ${geistMono.variable} ${chenYuluoyan.variable} h-full antialiased`}
     >
-      <body className="h-full flex justify-center w-full bg-blue-300 p-4">
-        
-        <div className=" bg-blue-200 max-w-[480px] w-full h-full mx-auto rounded-3xl">
-          {children}
+      <body className={`h-full flex items-center justify-center w-full bg-[#EAE5D8] p-2 sm:p-4 text-[#1E1C1A]`}>
+      <div className="bg-[#FCFAEE] max-w-[440px] w-full h-[620px] rounded-2xl shadow-[0_8px_32px_rgba(30,28,26,0.08)] border-2 border-[#1E1C1A] flex flex-col justify-between overflow-hidden relative">
+      {children}
         </div>
-        
-        </body>
+      </body>
     </html>
   );
 }
